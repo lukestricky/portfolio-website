@@ -38,11 +38,11 @@ social:
   email: luke.strickland@queensu.ca # change to your email address
   links:
     # The first element serves as the copyright owner's link
-    - https://twitter.com/username # change to your twitter homepage
+    # https://twitter.com/username # change to your twitter homepage
     - https://github.com/lukestricky # change to your github homepage
     # Uncomment below to add more social links
     # - https://www.facebook.com/username
-    # - https://www.linkedin.com/in/username
+    - https://www.linkedin.com/in/luke-ap-strickland/
 
 google_site_verification: # fill in to your verification string
 
@@ -76,7 +76,7 @@ theme_mode: # [light | dark]
 img_cdn: "https://chirpy-img.netlify.app"
 
 # the avatar on sidebar, support local or CORS resources
-avatar: "/commons/avatar.jpg"
+avatar: "/assets/img/headshot_cropped.jpg"
 
 # The URL of the site-wide social preview image used in SEO `og:image` meta tag.
 # It can be overridden by a customized `page.image` in front matter.
