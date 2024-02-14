@@ -1,12 +1,9 @@
 ---
 title: "Real Time GPS Data Visulization"
 date: 2023-10-01
-categories: []
+categories: [Category1]
 tags: [GPS, Flutter, Arduino]
-author: Luke Strickland
-image:
-  path:
-  alt:
+author: Luke
 ---
 
 # Inspiration
@@ -25,7 +22,7 @@ The GPS I chose to use was the BN-220. It has the capability to send 7 messages 
 
 The disabling of messages and changing update speed of the GPS must be done on every start up as the GPS uses volatile memory onboard. This is done by sending messages to the GPS’s on start up. I used a native function in the NMEAGPS library to disable the messages and wrote a function to change the frequency by sending data using the UBX protocol.
 
-````c++
+```c++
 void sendUBX( const unsigned char *progmemBytes, size_t len )
 {
   gpsPort.write( 0xB5 ); // SYNC1
@@ -42,6 +39,7 @@ void sendUBX( const unsigned char *progmemBytes, size_t len )
   gpsPort.write( b ); // CHECKSUM B
 
 }
+```
 
 Below is the startup script to disable all unused messages and change the refresh rate to 4Hz. Note that all messages must be disabled before the frequency of the GPS can be changed.
 
@@ -68,7 +66,7 @@ Below is the startup script to disable all unused messages and change the refres
   gps.send_P( &gpsPort, (const __FlashStringHelper *) enableRMC );
   delay( 250 );
 
-````
+```
 
 # Getting accelerometer data
 
