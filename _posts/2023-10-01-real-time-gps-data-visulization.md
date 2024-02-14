@@ -65,10 +65,32 @@ Below is the startup script to disable all unused messages and change the refres
   //  Then re-enable the sentences that provide the pieces you want.
   gps.send_P( &gpsPort, (const __FlashStringHelper *) enableRMC );
   delay( 250 );
-
 ```
 
 # Getting accelerometer data
+
+The second and final sensor I used was a MPU-6050 module which contains a 3-Axis accelerometer chip as well as a 3-Axis gyroscope. This module is connected to the Arduino using the SDA and SCL pins as it uses I2C protocol. The gyroscope gives x, y, and z axis gyroscopic data that can be translated into roll and pitch degrees. When incorporating this into the Arduino code I added and calibration step which calibrates the Gyroscope to 0, 0, 0 right when you turn it on. This means that for the best reference point and accuracy the device should be turned on level surface. Both the calibration and the fetching and parsing of the data was done through the MPU6050_light library.
+
+The start up code for the MPU-6050 is show below.
+
+```c++
+// Initiates gyro
+Wire.begin();
+mpu.begin();
+delay(1000);
+mpu.calcOffsets(); // gyro and accelerometer offsets calculation
+Serial.println("Done!\n");
+```
+
+The very simple code is show below to get the roll, pitch, and yaw from the module using the library functions.
+
+```c++
+mpu.update();
+Roll = mpu.getAngleX();
+Pitch = mpu.getAngleY();
+Yaw = mpu.getAngleZ();
+
+```
 
 # Communication data with flutter app
 
