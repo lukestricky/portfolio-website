@@ -119,6 +119,8 @@ Here is the `/path/to/the/file.extend`{: .filepath}.
 This is a common code snippet, without syntax highlight and line number.
 ```
 
+hi
+
 ```
 This is a common code snippet, without syntax highlight and line number.
 ```
