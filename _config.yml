@@ -68,13 +68,6 @@ goatcounter:
 #
 theme_mode: # [light | dark]
 
-# The CDN endpoint for images.
-# Notice that once it is assigned, the CDN url
-# will be added to all image (site avatar & posts' images) paths starting with '/'
-#
-# e.g. 'https://cdn.com'
-img_cdn: "https://chirpy-img.netlify.app"
-
 # the avatar on sidebar, support local or CORS resources
 avatar: "/assets/img/headshot_cropped.jpg"
 
