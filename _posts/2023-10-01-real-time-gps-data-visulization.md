@@ -1,7 +1,7 @@
 ---
 title: "Real Time GPS Data Visulization"
 date: 2023-10-01
-categories: [Category1]
+categories: []
 tags: [GPS, Flutter, Arduino]
 author: Luke
 ---
