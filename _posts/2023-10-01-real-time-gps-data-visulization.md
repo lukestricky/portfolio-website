@@ -6,21 +6,33 @@ tags: [GPS, Flutter, Arduino]
 author: Luke
 ---
 
-# Inspiration
-
-I work as a sailing race coach in the summers, and I wanted to have some tangible data to reference when giving my athletes feedback on the water. I was having trouble finding an affordable solution to this, so I decided to make one, because that is what I’m going to school for this right?
-
 # Introduction
 
-Before staring development, I had to choose what data I wanted to measure as, and how I wanted to display it to the user. I decided to measure GPS speed over ground (SOG), GPS heading, along with accelerometer data. This would give the coach a good view of acceleration and boat rotation when plotted on a line graph over time. To display the data to the user I decided to user flutter as communication over WIFI seemed easy to do. Flutter also allowed me collect data, index it, and display it to the user dynamically.
+I work as a sailing race coach in the summers, and I wanted to have some tangible data to reference when giving my athletes feedback on the water. This includes measurments such as speed, heading, acceleration, and heeling. *Heeling is a sailing term used to describe when the boat is tipping or leaning to one side*. If a sailing coach was able to record these data points and then convey them to a sailor in real time, it would be extremely beneficial to the sailor’s progression and improvement. This project addresses the need for a sailboat-specific GPS tracking solution that is cost-effective, sustainable, adaptable, and can provide some necessary information to coaches.
 
-# Getting GPS data
+# Embedded System
 
-The goal with the GPS was to receive SOG, time, and heading data at approximately 4Hz. I decided on 4Hz as I planned to use TCP communication for this project and from experience that will run around 4Hz from an Arduino.
+The embedded system consists of a central microcontroller connected to two sensors and a power source. This is the extent of the hardware needed for the application of this project. There were multiple iterations of the physical system first through breadboard and finally implemented in a vector board prototype.
 
-The GPS I chose to use was the BN-220. It has the capability to send 7 messages through its TX pin which contains various types and forms of information. Consulting the data sheet, I found that I only needed the information from the RMC message for my application. To increase the speed of the transmission to the microcontroller I disabled the other 6 messages.
+![Desktop View](/assets/img/RealTimeGPSMonitor/schematic.jpg){: width="972" height="589" }
 
-The disabling of messages and changing update speed of the GPS must be done on every start up as the GPS uses volatile memory onboard. This is done by sending messages to the GPS’s on start up. I used a native function in the NMEAGPS library to disable the messages and wrote a function to change the frequency by sending data using the UBX protocol.
+## MCU
+
+The microcontroller use in the final design was an Arduino Rev 2 Wi-Fi, this allows for network communication and has enough processing power to handle all the sensor information at the speed that is required. The Arduino was powered by recycled 18650 cells, these cells output 3.7 V each, two cells connected in series gives 7.4 V which is in the 7 – 12 V voltage range of the Arduino’s voltage in pin.
+
+## Wi-Fi Access point
+
+The network communication was one of the most crucial parts used to send data to the frontend. It was established using the WiFiNINA library provided on Arduino’s website. The beginAP function was used to open an access point that could be accessed by anything with Wi-Fi capabilities, in this case, the frontend flutter app.
+
+```c++
+//add code
+```
+
+## GPS
+
+The first sensor that was necessary was the GPS module to receive speed, direction, and time data at 4 Hz. This refresh rate was chosen as this project used TCP communication which reliably runs at 4 Hz off Arduino access point Wi-Fi. The GPS module chosen for this application was the BN-220 module, it connects to the Arduino through UART protocol. My GPS of choice the BN-220 is rated for a refresh rate of 1-18 Hz and has the capability to send seven unique GPS messages to the Arduino. The only message that was necessary to receive the relevant information was the RCM message. To increase speed and reliability the other six messages were disabled on start up. The refresh rate of the GPS was changed by first disabling all seven messages from the GPS, waiting for a short period of time, and then sending a message to the GPS to enable 4Hz. After the refresh rate has been updated the relevenant message can be enabled by sending yet another message to the GPS. Updating the refresh rate and disabling messages must be done every time the GPS was turned on as it used volatile memory.
+
+After setting up the GPS, the data from the RCM message mentioned was read through the RX pin on the Arduino. The NMEAGPS Arduino library was used to easily parse the message into each separate values, and to determine when the GPS was updating. Each time the GPS updated the speed, direction, and time value was also updated. 
 
 ```c++
 void sendUBX( const unsigned char *progmemBytes, size_t len )
