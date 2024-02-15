@@ -14,7 +14,7 @@ I work as a sailing race coach in the summers, and I wanted to have some tangibl
 
 The embedded system consists of a central microcontroller connected to two sensors and a power source. This is the extent of the hardware needed for the application of this project. There were multiple iterations of the physical system first through breadboard and finally implemented in a vector board prototype.
 
-![Desktop View](/assets/img/RealTimeGPSMonitor/schematic.jpg){: width="500" height="250" }
+![Desktop View](/assets/img/AutomaticStartSequence/StartSequenceExample.gif){: width="500" height="250" }
 
 ## MCU
 
