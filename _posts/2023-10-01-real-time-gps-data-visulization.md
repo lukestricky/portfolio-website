@@ -8,13 +8,13 @@ author: Luke
 
 # Introduction
 
-I work as a sailing race coach in the summers, and I wanted to have some tangible data to reference when giving my athletes feedback on the water. This includes measurments such as speed, heading, acceleration, and heeling. *Heeling is a sailing term used to describe when the boat is tipping or leaning to one side*. If a sailing coach was able to record these data points and then convey them to a sailor in real time, it would be extremely beneficial to the sailor’s progression and improvement. This project addresses the need for a sailboat-specific GPS tracking solution that is cost-effective, sustainable, adaptable, and can provide some necessary information to coaches.
+I work as a sailing race coach in the summers, and I wanted to have some tangible data to reference when giving my athletes feedback on the water. This includes measurments such as speed, heading, acceleration, and heeling. _Heeling is a sailing term used to describe when the boat is tipping or leaning to one side_. If a sailing coach was able to record these data points and then convey them to a sailor in real time, it would be extremely beneficial to the sailor’s progression and improvement. This project addresses the need for a sailboat-specific GPS tracking solution that is cost-effective, sustainable, adaptable, and can provide some necessary information to coaches.
 
 # Embedded System
 
 The embedded system consists of a central microcontroller connected to two sensors and a power source. This is the extent of the hardware needed for the application of this project. There were multiple iterations of the physical system first through breadboard and finally implemented in a vector board prototype.
 
-![Desktop View](/assets/img/RealTimeGPSMonitor/schematic.jpg){: width="972" height="589" }
+![Desktop View](/assets/img/RealTimeGPSMonitor/schematic.jpg){: width="500" height="250" }
 
 ## MCU
 
@@ -32,7 +32,7 @@ The network communication was one of the most crucial parts used to send data to
 
 The first sensor that was necessary was the GPS module to receive speed, direction, and time data at 4 Hz. This refresh rate was chosen as this project used TCP communication which reliably runs at 4 Hz off Arduino access point Wi-Fi. The GPS module chosen for this application was the BN-220 module, it connects to the Arduino through UART protocol. My GPS of choice the BN-220 is rated for a refresh rate of 1-18 Hz and has the capability to send seven unique GPS messages to the Arduino. The only message that was necessary to receive the relevant information was the RCM message. To increase speed and reliability the other six messages were disabled on start up. The refresh rate of the GPS was changed by first disabling all seven messages from the GPS, waiting for a short period of time, and then sending a message to the GPS to enable 4Hz. After the refresh rate has been updated the relevenant message can be enabled by sending yet another message to the GPS. Updating the refresh rate and disabling messages must be done every time the GPS was turned on as it used volatile memory.
 
-After setting up the GPS, the data from the RCM message mentioned was read through the RX pin on the Arduino. The NMEAGPS Arduino library was used to easily parse the message into each separate values, and to determine when the GPS was updating. Each time the GPS updated the speed, direction, and time value was also updated. 
+After setting up the GPS, the data from the RCM message mentioned was read through the RX pin on the Arduino. The NMEAGPS Arduino library was used to easily parse the message into each separate values, and to determine when the GPS was updating. Each time the GPS updated the speed, direction, and time value was also updated.
 
 ```c++
 void sendUBX( const unsigned char *progmemBytes, size_t len )
