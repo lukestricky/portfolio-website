@@ -95,11 +95,13 @@ void writeNum(uint32_t num){
 If I were to place the 7-segment display logic in the main program loop it would appear choppy as other code was executed, as soon as there is a delay the screen would only be able to display one digit. To get around this and consistently switch between addressing each digit, I used an interrupt that was called every 3.75 milliseconds so that it would be separate from the main program loop. An interrupt works by taking the clock frequency of the oscillator in the MCU, dividing it, and then counting a certain number of cycles. These values are the pre scaler, and period counter or auto reload register (ARR) respectively. After it has counted the necessary number of cycles the interrupt will be triggered, and it will start over again.
 I selected a pre-scaler value of 200 to divide the 16MHz clock signal into a 80 kHz one and calculated the counter period to fit 3.75 milliseconds.
 
-$` x = {(ARR)(PSC) \over f} `$
+$$
+x = \frac{(ARR)(PSC)}{f}
 
-$` 3.75 ms = {(ARR)(200) \over 16MHz} `$
+3.75 ms = \frac{(ARR)(200)}{16 MHz}
 
-$` ARR = 300 `$
+ARR = 300
+$$
 
 After configuring the PSC and ARR values for the timer in the STM32 cube IDE and selecting TIM7 to be a global interrupt I was almost done. The STM32 cube IDE makes creating interrupts easy. They provide a call back function that is called upon every interrupt trigger and passes a reference to the TIM that triggered it. This allows multiple interrupts to be easily used and managed.
 
