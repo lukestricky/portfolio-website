@@ -9,6 +9,7 @@ author: Luke
 # Quick Background on Start Sequences
 
 Before getting into the project, it is important to understand what I am automating. A sailing start sequence consists of a 3- or 5-minute countdown. This countdown will have a total of four signals, depending on the start sequence the timing of the signals will differ. For a 5-minute sequence, there will be signals at 5-4-1-GO. For a 3-minute sequence there will be signals at 3-2-1-GO. There are also sequences called rolling starts where the end of one start sequence is the start of another. The automation of this will include all different variations of the sequence so its applicable in all situations.
+
 ![Desktop View](/assets/img/AutomaticStartSequence/StartSequenceExample.gif){: width="500" height="250" }
 
 # Introduction
@@ -21,6 +22,7 @@ I created a prototype of this idea last summer in a day to test it and see if it
 ## How they work
 
 7-Segment displays work by letting the programmer address each of the 7-segments in each digit individually to display a numeric value from 0-9. There are two common types of internal wiring that 7-segments display come with: Common Anode and Common Cathode. This refers to the flow of current from digit pins to segment pins. I will be using Common Cathode types, which means that every segment is internally connected at the cathode side, which is connected to the digit pin. When the digit pin is pulled low and the segment pins are pulled high, the segments turn on. To not display a segment, it should be pulled low to match that of the digit pin so there is no potential difference between the pins. As you can see controlling 7-segment displays is all about voltage control, and voltage difference between the digit and segment pins.
+
 In my case each digit has all its segments sharing a wire with every other digit, as a result. only one digit can be addressed at a time Meaning to say that each digit will have to constantly be activated, written to, and then deactivated in loop, do this fast enough and I can display things on more than one digit at a time.
 
 ## Code for driving displays
@@ -61,7 +63,7 @@ To select which digit to write to I wrote a function that pulls one digit high a
 // Input: digit number 1-4
 // Will enable the inputed digit and disable all other digits.
 void selectDigit(uint32_t digit){
-	for (int i = 0; i < 4; i++){
+    for (int i = 0; i < 4; i++){
 		// Enables inputed digit (pulls low)
 		if (i == digit - 1){
 			HAL_GPIO_WritePin(DIGIT_PORTS[i], DIGIT_PINS[i], 0);
@@ -92,9 +94,13 @@ void writeNum(uint32_t num){
 
 If I were to place the 7-segment display logic in the main program loop it would appear choppy as other code was executed, as soon as there is a delay the screen would only be able to display one digit. To get around this and consistently switch between addressing each digit, I used an interrupt that was called every 3.75 milliseconds so that it would be separate from the main program loop. An interrupt works by taking the clock frequency of the oscillator in the MCU, dividing it, and then counting a certain number of cycles. These values are the pre scaler, and period counter or auto reload register (ARR) respectively. After it has counted the necessary number of cycles the interrupt will be triggered, and it will start over again.
 I selected a pre-scaler value of 200 to divide the 16MHz clock signal into a 80 kHz one and calculated the counter period to fit 3.75 milliseconds.
-$$ x = {(ARR)(PSC) \over f} $$
-$$ 3.75 ms = {(ARR)(200) \over 16MHz} $$
-$$ ARR = 300 $$
+
+$` x = {(ARR)(PSC) \over f} `$
+
+$` 3.75 ms = {(ARR)(200) \over 16MHz} `$
+
+$` ARR = 300 `$
+
 After configuring the PSC and ARR values for the timer in the STM32 cube IDE and selecting TIM7 to be a global interrupt I was almost done. The STM32 cube IDE makes creating interrupts easy. They provide a call back function that is called upon every interrupt trigger and passes a reference to the TIM that triggered it. This allows multiple interrupts to be easily used and managed.
 
 ```c
