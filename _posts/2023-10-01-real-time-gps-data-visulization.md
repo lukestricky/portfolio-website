@@ -14,8 +14,6 @@ I work as a sailing race coach in the summers, and I wanted to have some tangibl
 
 The embedded system consists of a central microcontroller connected to two sensors and a power source. This is the extent of the hardware needed for the application of this project. There were multiple iterations of the physical system first through breadboard and finally implemented in a vector board prototype.
 
-![Desktop View](/assets/img/AutomaticStartSequence/StartSequenceExample.gif){: width="500" height="250" }
-
 ## MCU
 
 The microcontroller use in the final design was an Arduino Rev 2 Wi-Fi, this allows for network communication and has enough processing power to handle all the sensor information at the speed that is required. The Arduino was powered by recycled 18650 cells, these cells output 3.7 V each, two cells connected in series gives 7.4 V which is in the 7 – 12 V voltage range of the Arduino’s voltage in pin.
