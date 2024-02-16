@@ -96,10 +96,12 @@ If I were to place the 7-segment display logic in the main program loop it would
 I selected a pre-scaler value of 200 to divide the 16MHz clock signal into a 80 kHz one and calculated the counter period to fit 3.75 milliseconds.
 
 $$
-x = \frac{(ARR)(PSC)}{f}
-
+t = \frac{(ARR)(PSC)}{f}
+$$
+$$
 3.75 ms = \frac{(ARR)(200)}{16 MHz}
-
+$$
+$$
 ARR = 300
 $$
 
