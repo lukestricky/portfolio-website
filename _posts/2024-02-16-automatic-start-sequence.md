@@ -8,26 +8,28 @@ author: Luke
 
 # Quick Background on Start Sequences
 
-Before getting into the project, it is important to understand what I am automating. A sailing start sequence consists of a 3- or 5-minute countdown. This countdown will have a total of four signals, depending on the start sequence the timing of the signals will differ. For a 5-minute sequence, there will be signals at 5-4-1-GO. For a 3-minute sequence there will be signals at 3-2-1-GO. There are also sequences called rolling starts where the end of one start sequence is the start of another. The automation of this will include all different variations of the sequence so its applicable in all situations.
+Before getting into the project, it is important to understand what I was automating. A sailing start sequence consists of a 3- or 5-minute countdown. This countdown will have a total of four signals, depending on the start sequence the timing of the signals will differ. For a 5-minute sequence, there will be signals at 5-4-1-GO. For a 3-minute sequence there will be signals at 3-2-1-GO. There are also sequences called rolling starts where the end of one start sequence is the start of another. The automation of this included all different variations of the sequence so its applicable in all situations.
 
 ![Desktop View](/assets/img/AutomaticStartSequence/StartSequenceExample.gif){: width="500" height="250" }
 
 # Introduction
 
-I work as a sailing race coach in the summer, and I had difficulty running a start sequence while driving a coach boat and giving feedback. During a sequence I constantly need to be looking at my watch to keep track of the time and be ready to give a signal, this gets increasingly difficult when I am trying to give meaningful feedback. If the start sequence could be automated it would make my life as coach much easier, create a more reliable and repeatable sequence, and overall improve the quality of training. For the project I will be using a STM32 MCU to control a load switch connected to a horn. The I/O will utilize 3 seven segment displays to show time and modes, along with three buttons. It will be powered by 3 recycled 18650s in series to produce 12 volts.
-I created a prototype of this idea last summer in a day to test it and see if it was as useful as I thought it would be. After using it for a day I was sold, however, the prototype I made had some unreliable connections that were made apparent by the rough conditions on a coach boat. To solve this problem, I decided to create this project as a PCB and learn some bare metal while I’m at it.
+I work as a sailing race coach in the summer, and I had difficulty running a start sequence while driving a coach boat and giving feedback. During a sequence I constantly needed to be looking at my watch to keep track of the time and be ready to give a signal, this got increasingly difficult when trying to give meaningful feedback. If the start sequence could be automated it would make my life as coach much easier, create a more reliable and repeatable sequence, and overall improve the quality of training. For the project I used a STM32 MCU to control a load switch connected to a horn. The I/O utilized 3 7-segment displays to show time and modes, along with three buttons. It was powered by 3 recycled 18650s in series to produce 12 volts.
+
+I created a prototype of this idea last summer using Arduino to test it and see if it was as useful as I thought it would be. After using it for a day I was sold, however, the prototype I made had some unreliable connections that were made apparent by the rough conditions on a coach boat. To solve this problem for the next iteration, I decided to create this project as a PCB and learn some bare metal while I’m at it.
 
 # 7-Segment Displays
 
 ## How they work
 
-7-Segment displays work by letting the programmer address each of the 7-segments in each digit individually to display a numeric value from 0-9. There are two common types of internal wiring that 7-segments display come with: Common Anode and Common Cathode. This refers to the flow of current from digit pins to segment pins. I will be using Common Cathode types, which means that every segment is internally connected at the cathode side, which is connected to the digit pin. When the digit pin is pulled low and the segment pins are pulled high, the segments turn on. To not display a segment, it should be pulled low to match that of the digit pin so there is no potential difference between the pins. As you can see controlling 7-segment displays is all about voltage control, and voltage difference between the digit and segment pins.
+7-Segment displays work by letting the programmer address each of the 7-segments in each digit individually to display a numeric value from 0-9. A voltage is applied across a digit (or enable) pin, and segment pins. This voltage difference lights up the led for each segment. There are two common types of internal wiring that 7-segments display come with: Common Anode and Common Cathode. This refers to the flow of current from the digit pin to segment pins. I will be using Common Cathode types, which means that every segment is internally connected at the cathode side, which is connected to the digit pin. When the digit pin is pulled low and the segment pins are pulled high, the segments turn on. To not display a segment, it should be pulled low to match that of the digit pin so there is no potential difference between the pins. As you can see controlling 7-segment displays is all about voltage control, and voltage difference between the digit and segment pins.
 
-In my case each digit has all its segments sharing a wire with every other digit, as a result. only one digit can be addressed at a time Meaning to say that each digit will have to constantly be activated, written to, and then deactivated in loop, do this fast enough and I can display things on more than one digit at a time.
+In my case I used multiple digits, each digit had all its segments sharing a wire with every other digit. As a result, only one digit could be addressed at a time, meaning to say that each digit had to be constantly be activated, written to, and then deactivated in loop, by doing this fast enough and I could display things on more than one digit at a time.
 
 ## Code for driving displays
 
 Before writing the drivers, I created a header file to hold all of the information necessary such as the pins and ports of the segments and digits as they are connected to the STM32. I also included function definitions.
+
 To easily address each pin and port I created arrays indexing the digits and segments numerically as well as alphabetically. I also used an array of uint8_t arrays to hold which segments should be high and low for each number 0-9. This later allows me to use loops to address and write to each digit.
 
 ```c
@@ -55,9 +57,9 @@ uint8_t NUMS[10][7] = {
 		{1,1,1,0,0,0,0}, // 7
 		{1,1,1,1,1,1,1}, // 8
 		{1,1,1,1,0,1,1}};// 9
-```
+``` 
 
-To select which digit to write to I wrote a function that pulls one digit high and the rest low by using the STM32 GPIO driver write pin function. This function takes advantage of the arrays I made previously to utilize a loop to go through all the digits efficiently. Note that I only wrote this driver to accommodate 4 digits, however, it can be easily modified to accommodate more if that is necessary in later projects.
+To select which digit to write to I wrote a function that pulled one digit high and the rest low by using the STM32 GPIO driver write pin function. This function took advantage of the arrays I made previously to utilize a loop to go through all the digits efficiently. Note that I only wrote this driver to accommodate 4 digits, however, it can be easily modified to accommodate more if that is necessary in later projects.
 
 ```c
 // Input: digit number 1-4
@@ -76,7 +78,7 @@ void selectDigit(uint32_t digit){
 }
 ```
 
-To write a number to the digit the segment pins are pulled either high or low depending on value in the NUMS array for the chosen number and segment number. Again the use of the previously made arrays makes this code very minimal when utilizing a for loop.
+To write a number to the digit, the segment pins are pulled either high or low depending on value in the NUMS array for the chosen number and segment number. Again the use of the previously made arrays makes this code very minimal when utilizing a for loop.
 
 ```c
 // Input: integer from 0-9
@@ -92,22 +94,47 @@ void writeNum(uint32_t num){
 
 ## Using interrupts
 
-If I were to place the 7-segment display logic in the main program loop it would appear choppy as other code was executed, as soon as there is a delay the screen would only be able to display one digit. To get around this and consistently switch between addressing each digit, I used an interrupt that was called every 3.75 milliseconds so that it would be separate from the main program loop. An interrupt works by taking the clock frequency of the oscillator in the MCU, dividing it, and then counting a certain number of cycles. These values are the pre scaler, and period counter or auto reload register (ARR) respectively. After it has counted the necessary number of cycles the interrupt will be triggered, and it will start over again.
-I selected a pre-scaler value of 200 to divide the 16MHz clock signal into a 80 kHz one and calculated the counter period to fit 3.75 milliseconds.
+If I were to place the 7-segment display logic in the main program loop it would appear choppy as other code was executed, as soon as there is a delay the screen would only be able to display one digit. To get around this and consistently switch between addressing each digit, I used a timer to call an interrupt every 3.75 milliseconds so that it would be separate from the main program loop. A timer works by taking the clock frequency of the oscillator in the MCU, dividing it, and then counting a certain number of cycles. These values are the pre scaler, and period counter or auto reload register (ARR) respectively. After it has counted the necessary number of cycles an interrupt can be triggered, and it will start over again.
 
-$$
-t = \frac{(ARR)(PSC)}{f}
-$$
-$$
-3.75 ms = \frac{(ARR)(200)}{16 MHz}
-$$
-$$
-ARR = 300
-$$
+I selected a pre-scaler value of 200 to divide the 16MHz clock signal into a 80 kHz one and calculated the counter period to fit 3.75 milliseconds. 300 periods of 80 kHz will take our desired amount of time so the ARR value is 300.
+
+![Desktop View](img of stm32 timer config){: width="500" height="250" }
 
 After configuring the PSC and ARR values for the timer in the STM32 cube IDE and selecting TIM7 to be a global interrupt I was almost done. The STM32 cube IDE makes creating interrupts easy. They provide a call back function that is called upon every interrupt trigger and passes a reference to the TIM that triggered it. This allows multiple interrupts to be easily used and managed.
 
+Inside of the interrupt function I created a state machine to manage which digit will be updated when the interrupt is called, this will just rotate evenly through the digits. My main application of the screen was to use it as a timer so I decided to code that first. The **time** variable is used to hold the number of seconds to display. After doing a little bit of math, each digits value can be determined. The digit is then displayed based on the state machine using the previously mentioned **selectDigit** and **writeNum** functions.
+
 ```c
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
+
 }
 ```
+
+# Counting down
+It was import that the timer portion of this project was accurate to a T as it would confuse the sailors if it wasn't. I accomplished this by using another interrupt triggered by a timer. I wanted the timer to trigger every one second as that is when I want the time to change, the screen to update, and the horn to sound when its supposed to. After the same calculation for the 7-segment interrupt I found that the pre scaler should be 300 and the counter period should be 53555. After configuring this in the STM32 cube IDE once again I just had to implement some logic in the interrupt function. To start off I just had the time variable decrement every call if the timer was running, I will touch more on this later.
+```c
+//code
+```
+# Button Debouncer
+When using a button, in the ideal case it will either go from low to high or high to low only once as your press it. In reality when a button is pressed, its state will bounce back and forth until settling as either high or low, this appears as multiple button presses and is not ideal. To fix this problem I used an external interrupt to detect a button press, this will then call a timer interrupt that waits 50ms after the button is pressed for it to reach a steady state, if it is still pressed by then, it will count as a button press.
+```c
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)  
+{ 
+	if(GPIO_Pin == Push_Button_Pin && state == true){
+		HAL_TIM_Base_Start_IT(&htim1); 
+		buttonOneState = false; 
+	} else{ 
+	__NOP(); 
+	} 
+}
+```
+Inside of the timer callback after 50ms has passed.
+```c
+if(HAL_GPIO_ReadPin(Push_Button_GPIO_Port, Push_Button_Pin) == GPIO_PIN_RESET){
+	HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12); buttonOneState = true;
+	HAL_TIM_Base_Stop_IT(&htim1); 
+}
+```
+https://www.instructables.com/STM32CubeMX-Button-Debounce-With-Interrupt/ 
+
+# Controlling the Horn
