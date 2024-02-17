@@ -98,8 +98,6 @@ If I were to place the 7-segment display logic in the main program loop it would
 
 I selected a pre-scaler value of 200 to divide the 16MHz clock signal into a 80 kHz one and calculated the counter period to fit 3.75 milliseconds. 300 periods of 80 kHz will take our desired amount of time so the ARR value is 300.
 
-![Desktop View](img of stm32 timer config){: width="500" height="250" }
-
 After configuring the PSC and ARR values for the timer in the STM32 cube IDE and selecting TIM7 to be a global interrupt I was almost done. The STM32 cube IDE makes creating interrupts easy. They provide a call back function that is called upon every interrupt trigger and passes a reference to the TIM that triggered it. This allows multiple interrupts to be easily used and managed.
 
 Inside of the interrupt function I created a state machine to manage which digit will be updated when the interrupt is called, this will just rotate evenly through the digits. My main application of the screen was to use it as a timer so I decided to code that first. The **time** variable is used to hold the number of seconds to display. After doing a little bit of math, each digits value can be determined. The digit is then displayed based on the state machine using the previously mentioned **selectDigit** and **writeNum** functions.
@@ -111,30 +109,39 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 ```
 
 # Counting down
-It was import that the timer portion of this project was accurate to a T as it would confuse the sailors if it wasn't. I accomplished this by using another interrupt triggered by a timer. I wanted the timer to trigger every one second as that is when I want the time to change, the screen to update, and the horn to sound when its supposed to. After the same calculation for the 7-segment interrupt I found that the pre scaler should be 300 and the counter period should be 53555. After configuring this in the STM32 cube IDE once again I just had to implement some logic in the interrupt function. To start off I just had the time variable decrement every call if the timer was running, I will touch more on this later.
+It was import that the timer portion of this project was accurate to a T as it would confuse the sailors if it wasn't. I accomplished this by using another interrupt triggered by a timer. I wanted the timer to trigger every one second as that is when I want the time to change, the screen to update, and the horn to sound when its supposed to. After the same calculation for the 7-segment interrupt I found that the pre scaler should be 300 and the counter period should be 53555. After configuring this in the STM32 cube IDE once again I just had to have time decrement every time the interrupt was called. 
 ```c
-//code
+if (htim->Instance == TIM6){
+	time--;
+}
+```
+To toggle the count down and ensure that it always starts exactly on the second: I disabled the timer when its not in use and before enabling the timer I reset its count value, so that it will always start from the beginning of the second and yield the same start every time.
+```c
+HAL_TIM_Base_Stop_IT(&htim6); // Stops timer
+
+TIM6->CNT = 0; // Resets count
+
+HAL_TIM_Base_Start_IT(&htim6); // Starts timer
 ```
 # Button Debouncer
-When using a button, in the ideal case it will either go from low to high or high to low only once as your press it. In reality when a button is pressed, its state will bounce back and forth until settling as either high or low, this appears as multiple button presses and is not ideal. To fix this problem I used an external interrupt to detect a button press, this will then call a timer interrupt that waits 50ms after the button is pressed for it to reach a steady state, if it is still pressed by then, it will count as a button press.
+When using a button, in the ideal case it will either go from low to high or high to low only once as your press it. In reality when a button is pressed, its state will bounce back and forth until settling as either high or low, this appears as multiple button presses and is not ideal. To fix this problem I used an external interrupt to detect a button press, this will then call a timer interrupt that waits 50ms after the button is pressed for it to reach a steady state, if it is still pressed by then, it will count as a button press, holding the button will have no effect.
 ```c
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)  
-{ 
-	if(GPIO_Pin == Push_Button_Pin && state == true){
-		HAL_TIM_Base_Start_IT(&htim1); 
-		buttonOneState = false; 
-	} else{ 
-	__NOP(); 
-	} 
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+	if(GPIO_Pin == BUTTON1_Pin && buttonOneState == 1){
+		HAL_TIM_Base_Start_IT(&htim1);
+		buttonOneState = 0;
+	}
 }
 ```
 Inside of the timer callback after 50ms has passed.
 ```c
-if(HAL_GPIO_ReadPin(Push_Button_GPIO_Port, Push_Button_Pin) == GPIO_PIN_RESET){
-	HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12); buttonOneState = true;
-	HAL_TIM_Base_Stop_IT(&htim1); 
+if (htim->Instance == TIM1){
+	if (HAL_GPIO_ReadPin(BUTTON1_GPIO_Port, BUTTON1_Pin) == 0){
+		buttonOneState = 1;
+		// Button Action place holder //
+		HAL_TIM_Base_Stop_IT(&htim1);
+	}
 }
 ```
-https://www.instructables.com/STM32CubeMX-Button-Debounce-With-Interrupt/ 
-
 # Controlling the Horn
+...
